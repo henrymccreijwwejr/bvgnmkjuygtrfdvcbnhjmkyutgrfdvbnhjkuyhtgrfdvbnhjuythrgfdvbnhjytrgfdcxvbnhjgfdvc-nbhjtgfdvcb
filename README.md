@@ -1,5 +1,6 @@
 <div align="center">
-
+  
+![Logo](https://cdn.jsdelivr.net/gh/brominenetwork/Atlas@main/atlas.png)
 # Atlas (beta 1.0.2)
 by Bromine Network
 
