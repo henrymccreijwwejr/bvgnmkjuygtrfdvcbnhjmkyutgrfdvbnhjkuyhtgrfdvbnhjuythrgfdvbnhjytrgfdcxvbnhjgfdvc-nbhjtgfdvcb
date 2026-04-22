@@ -22,24 +22,23 @@
       position: relative;
     }
 
-    /* 📌 Grass canvas positioned in the background */
+    /* 🌿 Grass canvas isolated in the background */
     #grassCanvas {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      z-index: 1;
-      pointer-events: none; /* Allows clicks to pass through to the body */
+      z-index: 1; /* Sits behind the central wrap */
+      cursor: pointer;
     }
 
     .wrap {
       width: 420px;
       padding: 0 1rem;
       position: relative;
-      z-index: 2; /* Sits above the grass effect */
-      background: rgba(17, 17, 17, 0.85); /* Slight opacity to see grass behind it */
-      border-radius: 8px;
+      z-index: 2; /* Sits completely above the grass effect */
+      background: transparent; /* Changed to transparent so it doesn't block the grass */
     }
 
     h1 {
@@ -104,6 +103,7 @@
 </head>
 <body>
 
+  <!-- The grass canvas -->
   <canvas id="grassCanvas"></canvas>
 
   <div class="wrap">
@@ -112,9 +112,9 @@
       <input id="u" type="text" placeholder="search or enter a url." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
     </form>
     <div class="links">
-      <a href="https://github.com/brominenetwork/Atlas" target="_blank">github</a>
-      <a href="https://discord.gg/unblockings" target="_blank">discord</a>
-      <a href="https://t.me/@qatual" target="_blank">telegram</a>
+      <a href="https://github.com" target="_blank">github</a>
+      <a href="https://discord.gg" target="_blank">discord</a>
+      <a href="https://t.me" target="_blank">telegram</a>
     </div>
   </div>
 
@@ -135,7 +135,7 @@
         if(/\.|^localhost(:\d+)?$/.test(s)){
           try{new URL("https://"+s);return"https://"+s}catch(e){}
         }
-        return"https://duckduckgo.com/?q="+encodeURIComponent(s);
+        return"https://duckduckgo.com"+encodeURIComponent(s);
       }
       document.getElementById("f").onsubmit=function(e){
         e.preventDefault();
@@ -147,20 +147,19 @@
     }();
   </script>
 
-  <!-- Interactive Grass Script -->
+  <!-- Isolated Interactive Grass Script -->
   <script>
     const canvas = document.getElementById('grassCanvas');
     const ctx = canvas.getContext('2d');
 
     let width, height;
     const blades = [];
-    const bladeCount = Math.floor((window.innerWidth * window.innerHeight) / 400); 
     
     let clickX = null;
     let clickY = null;
     let clickTime = 0;
-    const forceDuration = 1000; // ms the click force lasts
-    const forceRadius = 150; // px radius of effect
+    const forceDuration = 1000; 
+    const forceRadius = 150; 
 
     class GrassBlade {
       constructor() {
@@ -181,7 +180,6 @@
         ctx.beginPath();
         ctx.moveTo(this.x, this.y);
         
-        // Calculate curve control points
         const cx = this.x + Math.sin(this.angle + this.lean) * (this.length / 2);
         const cy = this.y - Math.cos(this.angle + this.lean) * (this.length / 2);
         const ex = this.x + Math.sin(this.angle + this.lean) * this.length;
@@ -195,10 +193,8 @@
       }
 
       update(time) {
-        // Natural wind sway
         this.angle = this.baseAngle + Math.sin(time / 500 + this.x / 100) * 0.1;
 
-        // Click interaction
         if (clickX !== null) {
           const elapsedTime = performance.now() - clickTime;
           
@@ -210,14 +206,10 @@
             if (distance < forceRadius) {
               const forceFactor = (1 - distance / forceRadius) * (1 - elapsedTime / forceDuration);
               const angleToClick = Math.atan2(dy, dx);
-              
-              // Lean away from click source
               this.lean += Math.cos(angleToClick) * forceFactor * 1.5;
             }
           }
         }
-
-        // Return to normal
         this.lean *= 0.93;
       }
     }
@@ -229,7 +221,7 @@
       canvas.height = height;
       
       blades.length = 0;
-      const calculatedCount = Math.floor((width * height) / 400);
+      const calculatedCount = Math.floor((width * height) / 300); // Slightly denser grass
       for (let i = 0; i < calculatedCount; i++) {
         blades.push(new GrassBlade());
       }
@@ -246,8 +238,8 @@
       requestAnimationFrame(animate);
     }
 
-    // Trigger click wave
-    window.addEventListener('click', (e) => {
+    // Trigger click wave ONLY when clicking the grass canvas, not the form
+    canvas.addEventListener('click', (e) => {
       clickX = e.clientX;
       clickY = e.clientY;
       clickTime = performance.now();
